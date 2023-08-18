@@ -73,6 +73,8 @@ module.exports = function (nodecg) {
     if (found === undefined) {
       donation.shown = false;
       donation.read = false;
+      donation.amount = parseFloat(donation.amount.value);
+      donation.name = donation.donor_name;
       donationsRep.value.push(donation);
     }
   }
