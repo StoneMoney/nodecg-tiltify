@@ -75,6 +75,7 @@ module.exports = function (nodecg) {
       donation.read = false;
       donation.amount = parseFloat(donation.amount.value);
       donation.name = donation.donor_name;
+      donation.completedAt = donation.completed_at;
       donationsRep.value.push(donation);
     }
   }
