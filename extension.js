@@ -14,7 +14,7 @@ module.exports = function (nodecg) {
   const app = nodecg.Router();
 
   var donationsRep = nodecg.Replicant("donations", {
-    defaultValue: [],
+    defaultValue: [{ id: 0, name: 'Required Differentiator', comment: 'No Comments', amount: 0, read: true, shown: true }],
   });
   var allDonationsRep = nodecg.Replicant("alldonations", {
     defaultValue: [],
@@ -67,7 +67,7 @@ module.exports = function (nodecg) {
   var client = new TiltifyClient(nodecg.bundleConfig.tiltify_client_id, nodecg.bundleConfig.tiltify_client_secret);
 
   function pushUniqueDonation(donation) {
-    var found = donationsRep.value.find(function (element) {
+    var found = allDonationsRep.value.find(function (element) {
       return element.id === donation.id;
     });
     if (found === undefined) {
@@ -77,6 +77,7 @@ module.exports = function (nodecg) {
       donation.name = donation.donor_name;
       donation.completedAt = donation.completed_at;
       donationsRep.value.push(donation);
+      allDonationsRep.value.push({...donation, _oid: donation.id}); // _oid exists because NodeCG doesn't like objects that are identical across different reps
     }
   }
 
@@ -141,11 +142,12 @@ module.exports = function (nodecg) {
     client.Campaigns.getDonations(
       nodecg.bundleConfig.tiltify_campaign_id,
       function (alldonations) {
-        if (
-          JSON.stringify(allDonationsRep.value) !== JSON.stringify(alldonations)
-        ) {
-          allDonationsRep.value = alldonations;
-        }
+        allDonationsRep.value = alldonations.map((donation) => {
+          donation.amount = parseFloat(donation.amount.value);
+          donation.name = donation.donor_name;
+          donation.completedAt = donation.completed_at;
+          return donation;
+        });
       }
     );
   }
@@ -232,18 +234,22 @@ module.exports = function (nodecg) {
     askTiltifyForAllDonations();
 
     setInterval(function () {
+      askTiltifyForTotal();
       askTiltify();
-    }, WEBHOOK_MODE ? 120000 : 5000);
+    }, WEBHOOK_MODE ? 120000 : 5000); // 2 MINUTES OR 5 SECONDS
   
     setInterval(function () {
       askTiltifyForAllDonations();
-    }, 5 * 60000);
+    }, 15 * 60000); // 15 MINUTES
   })
 
   nodecg.listenFor("clear-donations", (value, ack) => {
-    for (let i = 0; i < donationsRep.value.length; i++) {
-      donationsRep.value[i].read = true;
-    }
+    allDonationsRep.value = allDonationsRep.value.map((donation) => {
+      donation.read = true;
+      donation.shown = true;
+      return donation;
+    });
+    donationsRep.value = [{ id: 0, name: 'Required Differentiator', comment: 'No Comments', amount: 0, read: true, shown: true }];
 
     if (ack && !ack.handled) {
       ack(null, value);
@@ -253,10 +259,21 @@ module.exports = function (nodecg) {
   nodecg.listenFor("mark-donation-as-read", (value, ack) => {
     nodecg.log.info("Mark read", value.id)
     var isElement = (element) => element.id === value.id;
+    var allElementIndex = allDonationsRep.value.findIndex(isElement);
+    if(allElementIndex !== -1) {
+      allDonationsRep.value[allElementIndex].read = true;
+    }
     var elementIndex = donationsRep.value.findIndex(isElement);
     if (elementIndex !== -1) {
       nodecg.log.info("Found", elementIndex, donationsRep.value[elementIndex])
-      donationsRep.value[elementIndex].read = true;
+      // const workingArray = donationsRep.value
+      // workingArray.splice(elementIndex, 1)
+      // donationsRep.value = workingArray
+      if(donationsRep.value[elementIndex].shown) {
+        donationsRep.value.splice(elementIndex, 1)
+      } else {
+        donationsRep.value[elementIndex].read = true;
+      }
       if (ack && !ack.handled) {
         ack(null, null);
       }
@@ -270,9 +287,17 @@ module.exports = function (nodecg) {
 
   nodecg.listenFor("mark-donation-as-shown", (value, ack) => {
     var isElement = (element) => element.id === value.id;
+    var allElementIndex = allDonationsRep.value.findIndex(isElement);
+    if(allElementIndex !== -1) {
+      allDonationsRep.value[allElementIndex].shown = true;
+    }
     var elementIndex = donationsRep.value.findIndex(isElement);
     if (elementIndex !== -1) {
-      donationsRep.value[elementIndex].shown = true;
+      if(donationsRep.value[elementIndex].read) {
+        donationsRep.value.splice(elementIndex, 1)
+      } else {
+        donationsRep.value[elementIndex].shown = true;
+      }
       if (ack && !ack.handled) {
         ack(null, null);
       }
