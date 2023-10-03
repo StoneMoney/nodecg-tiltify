@@ -14,7 +14,7 @@ module.exports = function (nodecg) {
   const app = nodecg.Router();
 
   var donationsRep = nodecg.Replicant("donations", {
-    defaultValue: [{ id: 0, name: 'Required Differentiator', comment: 'No Comments', amount: 0, read: true, shown: true }],
+    defaultValue: [{ id: "0", name: 'Required Differentiator', comment: 'No Comments', amount: 0, read: true, shown: true }],
   });
   var allDonationsRep = nodecg.Replicant("alldonations", {
     defaultValue: [],
@@ -249,7 +249,7 @@ module.exports = function (nodecg) {
       donation.shown = true;
       return donation;
     });
-    donationsRep.value = [{ id: 0, name: 'Required Differentiator', comment: 'No Comments', amount: 0, read: true, shown: true }];
+    donationsRep.value = [{ id: "0", name: 'Required Differentiator', comment: 'No Comments', amount: 0, read: true, shown: true }];
 
     if (ack && !ack.handled) {
       ack(null, value);
