@@ -68,7 +68,7 @@ module.exports = function (nodecg) {
 
   function pushUniqueDonation(donation) {
     var found = allDonationsRep.value.find(function (element) {
-      return element.id === donation.id;
+      return element === donation.id;
     });
     if (found === undefined) {
       donation.shown = false;
@@ -76,8 +76,9 @@ module.exports = function (nodecg) {
       donation.amount = parseFloat(donation.amount.value);
       donation.name = donation.donor_name;
       donation.completedAt = donation.completed_at;
+      nodecg.sendMessage("push-donation", donation);
       donationsRep.value.push(donation);
-      allDonationsRep.value.push({...donation, _oid: donation.id}); // _oid exists because NodeCG doesn't like objects that are identical across different reps
+      allDonationsRep.value.push(donation.id)
     }
   }
 
@@ -142,12 +143,7 @@ module.exports = function (nodecg) {
     client.Campaigns.getDonations(
       nodecg.bundleConfig.tiltify_campaign_id,
       function (alldonations) {
-        allDonationsRep.value = alldonations.map((donation) => {
-          donation.amount = parseFloat(donation.amount.value);
-          donation.name = donation.donor_name;
-          donation.completedAt = donation.completed_at;
-          return donation;
-        });
+        allDonationsRep.value = alldonations.map((donation) => donation.id)
       }
     );
   }
@@ -244,11 +240,6 @@ module.exports = function (nodecg) {
   })
 
   nodecg.listenFor("clear-donations", (value, ack) => {
-    allDonationsRep.value = allDonationsRep.value.map((donation) => {
-      donation.read = true;
-      donation.shown = true;
-      return donation;
-    });
     donationsRep.value = [{ id: "0", name: 'Required Differentiator', comment: 'No Comments', amount: 0, read: true, shown: true }];
 
     if (ack && !ack.handled) {
@@ -259,10 +250,6 @@ module.exports = function (nodecg) {
   nodecg.listenFor("mark-donation-as-read", (value, ack) => {
     nodecg.log.info("Mark read", value.id)
     var isElement = (element) => element.id === value.id;
-    var allElementIndex = allDonationsRep.value.findIndex(isElement);
-    if(allElementIndex !== -1) {
-      allDonationsRep.value[allElementIndex].read = true;
-    }
     var elementIndex = donationsRep.value.findIndex(isElement);
     if (elementIndex !== -1) {
       nodecg.log.info("Found", elementIndex, donationsRep.value[elementIndex])
@@ -287,10 +274,6 @@ module.exports = function (nodecg) {
 
   nodecg.listenFor("mark-donation-as-shown", (value, ack) => {
     var isElement = (element) => element.id === value.id;
-    var allElementIndex = allDonationsRep.value.findIndex(isElement);
-    if(allElementIndex !== -1) {
-      allDonationsRep.value[allElementIndex].shown = true;
-    }
     var elementIndex = donationsRep.value.findIndex(isElement);
     if (elementIndex !== -1) {
       if(donationsRep.value[elementIndex].read) {
