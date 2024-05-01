@@ -34,6 +34,9 @@ module.exports = function (nodecg) {
   var rewardsRep = nodecg.Replicant("rewards", {
     defaultValue: [],
   });
+  var donationMatchesRep = nodecg.Replicant("donationmatches", {
+    defaultValue: []
+  })
 
   var TiltifyClient = require("tiltify-api-client");
   
@@ -202,6 +205,14 @@ module.exports = function (nodecg) {
     });
   }
 
+  async function askTiltifyForDonationMatches() {
+    client.Campaigns.getDonationMatches(nodecg.bundleConfig.tiltify_campaign_id, function (
+      matches
+    ) {
+      donationMatchesRep.value = matches
+    })
+  }
+
   function askTiltify() {
     // Donations and total are handled by websocket normally, only ask if not using websockets
     if (!WEBHOOK_MODE) {
@@ -212,6 +223,7 @@ module.exports = function (nodecg) {
     askTiltifyForTargets();
     askTiltifyForSchedule();
     askTiltifyForRewards();
+    askTiltifyForDonationMatches();
   }
 
   client.initialize().then(()=>{
