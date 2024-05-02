@@ -79,9 +79,24 @@ module.exports = function (nodecg) {
       donation.amount = parseFloat(donation.amount.value);
       donation.name = donation.donor_name;
       donation.completedAt = donation.completed_at;
+      donation.isMatch = donation.is_match;
+      donation.matchingRate = donation.donation_matches?.length ?? 0;
       nodecg.sendMessage("push-donation", donation);
       donationsRep.value.push(donation);
       allDonationsRep.value.push(donation.id)
+    }
+  }
+
+  function updateMatchingDonations(donation) {
+    if(donation.donation_matches && donation.donation_matches.length > 0) {
+      let matches = donationMatchesRep.value
+      for (let donationMatch of donation.donation_matches) {
+        let index = matches.findIndex((item) => ((item.id == donationMatch.id && (new Date(donationMatch.updated_at).getTime() > new Date(item.updated_at).getTime()))))
+        if(index >= 0) {
+          matches[index] = donationMatch
+        }
+      }
+      donationMatchesRep.value = matches
     }
   }
 
@@ -120,6 +135,7 @@ module.exports = function (nodecg) {
     ) {
       // New donation
       pushUniqueDonation(req.body.data)
+      updateMatchingDonations(req.body.data)
     } else if (
       req.body.meta.event_type === "public:direct:fact_updated" &&
       req.body.data.id === nodecg.bundleConfig.tiltify_campaign_id
