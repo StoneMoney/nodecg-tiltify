@@ -91,8 +91,9 @@ module.exports = function (nodecg) {
     if(donation.donation_matches && donation.donation_matches.length > 0) {
       let matches = donationMatchesRep.value
       for (let donationMatch of donation.donation_matches) {
-        let index = matches.findIndex((item) => ((item.id == donationMatch.id && (new Date(donationMatch.updated_at).getTime() > new Date(item.updated_at).getTime()))))
+        let index = matches.findIndex((item) => ((item.id == donationMatch.id && (new Date(donation.created_at).getTime() > new Date(item.updated_at).getTime()))))
         if(index >= 0) {
+          donationMatch.updated_at = donation.created_at
           matches[index] = donationMatch
         }
       }
