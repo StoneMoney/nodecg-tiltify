@@ -81,25 +81,28 @@ module.exports = function (nodecg) {
       donation.completedAt = donation.completed_at;
       donation.isMatch = donation.is_match;
       donation.matchingRate = donation.donation_matches?.length ?? 0;
+      if(donationMatchesRep.value.filter((t)=>t.active).length > 0 || (donation.donation_matches?.length ?? 0) > 0) {
+        askTiltifyForDonationMatches()
+      }
       nodecg.sendMessage("push-donation", donation);
       donationsRep.value.push(donation);
       allDonationsRep.value.push(donation.id)
     }
   }
 
-  function updateMatchingDonations(donation) {
-    if(donation.donation_matches && donation.donation_matches.length > 0) {
-      let matches = donationMatchesRep.value
-      for (let donationMatch of donation.donation_matches) {
-        let index = matches.findIndex((item) => ((item.id == donationMatch.id && (new Date(donation.created_at).getTime() > new Date(item.updated_at).getTime()))))
-        if(index >= 0) {
-          donationMatch.updated_at = donation.created_at
-          matches[index] = donationMatch
-        }
-      }
-      donationMatchesRep.value = matches
-    }
-  }
+  // function updateMatchingDonations(donation) {
+  //   if(donation.donation_matches && donation.donation_matches.length > 0) {
+  //     let matches = donationMatchesRep.value
+  //     for (let donationMatch of donation.donation_matches) {
+  //       let index = matches.findIndex((item) => ((item.id == donationMatch.id && (new Date(donation.created_at).getTime() > new Date(item.updated_at).getTime()))))
+  //       if(index >= 0) {
+  //         donationMatch.updated_at = donation.created_at
+  //         matches[index] = donationMatch
+  //       }
+  //     }
+  //     donationMatchesRep.value = matches
+  //   }
+  // }
 
   function updateTotal(campaign) {
     // Less than check in case webhooks are sent out-of-order. Only update the total if it's higher!
@@ -136,7 +139,6 @@ module.exports = function (nodecg) {
     ) {
       // New donation
       pushUniqueDonation(req.body.data)
-      updateMatchingDonations(req.body.data)
     } else if (
       req.body.meta.event_type === "public:direct:fact_updated" &&
       req.body.data.id === nodecg.bundleConfig.tiltify_campaign_id
