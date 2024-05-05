@@ -323,6 +323,7 @@ module.exports = function (nodecg) {
     }
   });
 
+  donationsRep.value = donationsRep.value.filter((t)=>(!isNaN(t.amount)))
   nodecg.mount(app);
 
 };
