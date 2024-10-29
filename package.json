@@ -1,11 +1,11 @@
 {
-  "name": "nodecg-tiltify",
+  "name": "nodecg-kinstone",
   "version": "1.0.0",
-  "description": "Tiltify API Client",
+  "description": "Kinstone API Client",
   "homepage": "https://github.com/daniellockard/nodecg-tiltify",
   "author": {
-    "name": "Danny Lockard",
-    "email": "danielhlockard@gmail.com",
+    "name": "npgiano",
+    "email": "nick@stone.money",
     "url": ""
   },
   "files": [
@@ -21,6 +21,6 @@
   "license": "Apache-2.0",
   "dependencies": {
     "node-fetch": "^2.6.9",
-    "tiltify-api-client": "^2.0.0"
+    "node-redis-pubsub": "^5.0.0"
   }
 }
