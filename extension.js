@@ -13,28 +13,28 @@ try {
 module.exports = function (nodecg) {
   const app = nodecg.Router();
 
-  var donationsRep = nodecg.Replicant("donations", {
+  var donationsRep = nodecg.Replicant("donations","nodecg-starbar", {
     defaultValue: [{ id: "0", name: 'Required Differentiator', comment: 'No Comments', amount: 0, read: true, shown: true }],
   });
-  var allDonationsRep = nodecg.Replicant("alldonations", {
+  var allDonationsRep = nodecg.Replicant("alldonations","nodecg-starbar", {
     defaultValue: [],
   });
-  var campaignTotalRep = nodecg.Replicant("total", {
+  var campaignTotalRep = nodecg.Replicant("total","nodecg-starbar", {
     defaultValue: 0,
   });
-  var pollsRep = nodecg.Replicant("donationpolls", {
+  var pollsRep = nodecg.Replicant("donationpolls","nodecg-starbar", {
     defaultValue: [],
   });
-  var scheduleRep = nodecg.Replicant("schedule", {
+  var scheduleRep = nodecg.Replicant("schedule","nodecg-starbar", {
     defaultValue: [],
   });
-  var targetsRep = nodecg.Replicant("targets", {
+  var targetsRep = nodecg.Replicant("targets","nodecg-starbar", {
     defaultValue: [],
   });
-  var rewardsRep = nodecg.Replicant("rewards", {
+  var rewardsRep = nodecg.Replicant("rewards","nodecg-starbar", {
     defaultValue: [],
   });
-  var donationMatchesRep = nodecg.Replicant("donationmatches", {
+  var donationMatchesRep = nodecg.Replicant("donationmatches","nodecg-starbar", {
     defaultValue: []
   })
 
