@@ -270,58 +270,6 @@ module.exports = function (nodecg) {
     }, 15 * 60000); // 15 MINUTES
   })
 
-  nodecg.listenFor("clear-donations", (value, ack) => {
-    donationsRep.value = [{ id: "0", name: 'Required Differentiator', comment: 'No Comments', amount: 0, read: true, shown: true }];
-
-    if (ack && !ack.handled) {
-      ack(null, value);
-    }
-  });
-
-  nodecg.listenFor("mark-donation-as-read", (value, ack) => {
-    nodecg.log.info("Mark read", value.id)
-    var isElement = (element) => element.id === value.id;
-    var elementIndex = donationsRep.value.findIndex(isElement);
-    if (elementIndex !== -1) {
-      nodecg.log.info("Found", elementIndex, donationsRep.value[elementIndex])
-      // const workingArray = donationsRep.value
-      // workingArray.splice(elementIndex, 1)
-      // donationsRep.value = workingArray
-      if(donationsRep.value[elementIndex].shown) {
-        donationsRep.value.splice(elementIndex, 1)
-      } else {
-        donationsRep.value[elementIndex].read = true;
-      }
-      if (ack && !ack.handled) {
-        ack(null, null);
-      }
-    } else {
-      if (ack && !ack.handled) {
-        nodecg.log.error('Donation not found to mark as read | id:', value.id);
-        ack(new Error("Donation not found to mark as read"), null);
-      }
-    }
-  });
-
-  nodecg.listenFor("mark-donation-as-shown", (value, ack) => {
-    var isElement = (element) => element.id === value.id;
-    var elementIndex = donationsRep.value.findIndex(isElement);
-    if (elementIndex !== -1) {
-      if(donationsRep.value[elementIndex].read) {
-        donationsRep.value.splice(elementIndex, 1)
-      } else {
-        donationsRep.value[elementIndex].shown = true;
-      }
-      if (ack && !ack.handled) {
-        ack(null, null);
-      }
-    } else {
-      if (ack && !ack.handled) {
-        nodecg.log.error('Donation not found to mark as shown | id:', value.id);
-        ack(new Error("Donation not found to mark as shown"), null);
-      }
-    }
-  });
 
   donationsRep.value = donationsRep.value.filter((t)=>(!isNaN(t.amount)))
   nodecg.mount(app);
